@@ -1,0 +1,424 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電球で学ぶ2進法</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f0f2f5;
+            margin: 0;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            width: 95%;
+        }
+        
+        .bulbs-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: nowrap;
+            width: 100%;
+        }
+        
+        .bulb-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 0;
+            max-width: 120px;
+        }
+        
+        .bulb {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid #888;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bulb.off {
+            background: radial-gradient(circle at center, #aaa, #666);
+        }
+        
+        .bulb.on {
+            background: radial-gradient(circle at center, #ffff88, #ffcc00);
+            box-shadow: 0 0 30px rgba(255, 255, 0, 0.7);
+            border-color: #ffd700;
+        }
+        
+        .bulb::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 15px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+        }
+        
+        .position-value {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.8em;
+            text-align: center;
+        }
+        
+        .binary-value {
+            margin-top: 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .result {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .binary-display {
+            font-size: 2em;
+            font-family: monospace;
+            color: #0066cc;
+            margin: 10px 0;
+        }
+        
+        .decimal-display {
+            font-size: 2em;
+            color: #cc3300;
+            margin: 10px 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #0052a3;
+        }
+        
+        .explanation {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            line-height: 1.6;
+        }
+        
+        .calculation {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e8f0fe;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        
+        .challenge {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fff3cd;
+            border-radius: 5px;
+            border: 1px solid #ffeeba;
+        }
+        
+        .challenge-input {
+            width: 100px;
+            padding: 5px;
+            font-size: 18px;
+            margin: 0 10px;
+        }
+        
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .correct {
+            color: #28a745;
+        }
+        
+        .incorrect {
+            color: #dc3545;
+        }
+        
+        @media (max-width: 768px) {
+            .bulb {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .bulb::after {
+                top: 8px;
+                left: 8px;
+                width: 10px;
+                height: 10px;
+            }
+            
+            .position-value {
+                font-size: 0.7em;
+            }
+            
+            .bulbs-container {
+                gap: 5px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .bulb {
+                width: 30px;
+                height: 30px;
+            }
+            
+            .bulb::after {
+                top: 5px;
+                left: 5px;
+                width: 8px;
+                height: 8px;
+            }
+            
+            .position-value {
+                font-size: 0.6em;
+            }
+            
+            .binary-value {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>電球で学ぶ2進法</h1>
+    
+    <div class="container">
+        <div class="bulbs-container" id="bulbs-container">
+            <!-- 電球は動的に生成 -->
+        </div>
+        
+        <div class="result">
+            <div>2進数：<span class="binary-display" id="binary-display">00000000</span></div>
+            <div>10進数：<span class="decimal-display" id="decimal-display">0</span></div>
+        </div>
+        
+        <div class="calculation" id="calculation">
+            計算式：0
+        </div>
+        
+        <div class="controls">
+            <button onclick="resetBulbs()">リセット</button>
+            <button onclick="randomBinary()">ランダム</button>
+            <button onclick="allOn()">全てON</button>
+            <button onclick="allOff()">全てOFF</button>
+        </div>
+        
+        <div class="challenge">
+            <h3>チャレンジ問題</h3>
+            <p id="challenge-question">10進数の 0 を電球で表現してください</p>
+            <button onclick="generateChallenge()">新しい問題</button>
+            <button onclick="checkAnswer()">答え合わせ</button>
+            <div class="feedback" id="feedback"></div>
+        </div>
+        
+        <div class="explanation">
+            <h3>2進法の仕組み</h3>
+            <p>2進法は、0と1の2つの数字だけを使って数を表現する方法です。</p>
+            <p>各桁の位置は、右から左へ2の累乗（2⁰, 2¹, 2², ...）を表します。</p>
+            <ul>
+                <li>電球がON（点灯）= 1</li>
+                <li>電球がOFF（消灯）= 0</li>
+            </ul>
+            <p>例：2進数の 1010 = 1×2³ + 0×2² + 1×2¹ + 0×2⁰ = 8 + 0 + 2 + 0 = 10</p>
+        </div>
+    </div>
+
+    <script>
+        const numBulbs = 8; // 8ビット（0～255の範囲）
+        let bulbStates = new Array(numBulbs).fill(false);
+        let targetDecimal = 0;
+
+        // 初期化
+        function initializeBulbs() {
+            const container = document.getElementById('bulbs-container');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < numBulbs; i++) {
+                const positionValue = Math.pow(2, numBulbs - 1 - i);
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = 'bulb-wrapper';
+                
+                const bulb = document.createElement('div');
+                bulb.className = 'bulb off';
+                bulb.dataset.index = i;
+                bulb.onclick = () => toggleBulb(i);
+                
+                const position = document.createElement('div');
+                position.className = 'position-value';
+                position.textContent = `2^${numBulbs - 1 - i} = ${positionValue}`;
+                
+                const binaryValue = document.createElement('div');
+                binaryValue.className = 'binary-value';
+                binaryValue.id = `binary-${i}`;
+                binaryValue.textContent = '0';
+                
+                wrapper.appendChild(bulb);
+                wrapper.appendChild(position);
+                wrapper.appendChild(binaryValue);
+                container.appendChild(wrapper);
+            }
+            
+            updateDisplay();
+        }
+
+        // 電球のオン/オフを切り替え
+        function toggleBulb(index) {
+            bulbStates[index] = !bulbStates[index];
+            const bulb = document.querySelector(`.bulb[data-index="${index}"]`);
+            const binaryValue = document.getElementById(`binary-${index}`);
+            
+            if (bulbStates[index]) {
+                bulb.className = 'bulb on';
+                binaryValue.textContent = '1';
+            } else {
+                bulb.className = 'bulb off';
+                binaryValue.textContent = '0';
+            }
+            
+            updateDisplay();
+        }
+
+        // 表示を更新
+        function updateDisplay() {
+            const binaryString = bulbStates.map(state => state ? '1' : '0').join('');
+            const decimalValue = parseInt(binaryString, 2);
+            
+            document.getElementById('binary-display').textContent = binaryString;
+            document.getElementById('decimal-display').textContent = decimalValue;
+            
+            // 計算式を更新
+            let calculation = '';
+            let first = true;
+            for (let i = 0; i < numBulbs; i++) {
+                if (bulbStates[i]) {
+                    const power = numBulbs - 1 - i;
+                    const value = Math.pow(2, power);
+                    if (!first) calculation += ' + ';
+                    calculation += `${value}`;
+                    first = false;
+                }
+            }
+            
+            if (calculation === '') calculation = '0';
+            else calculation += ` = ${decimalValue}`;
+            
+            document.getElementById('calculation').textContent = `計算式：${calculation}`;
+        }
+
+        // リセット
+        function resetBulbs() {
+            bulbStates.fill(false);
+            for (let i = 0; i < numBulbs; i++) {
+                const bulb = document.querySelector(`.bulb[data-index="${i}"]`);
+                bulb.className = 'bulb off';
+                document.getElementById(`binary-${i}`).textContent = '0';
+            }
+            updateDisplay();
+        }
+
+        // ランダムな2進数を生成
+        function randomBinary() {
+            for (let i = 0; i < numBulbs; i++) {
+                bulbStates[i] = Math.random() > 0.5;
+                const bulb = document.querySelector(`.bulb[data-index="${i}"]`);
+                bulb.className = bulbStates[i] ? 'bulb on' : 'bulb off';
+                document.getElementById(`binary-${i}`).textContent = bulbStates[i] ? '1' : '0';
+            }
+            updateDisplay();
+        }
+
+        // 全てON
+        function allOn() {
+            bulbStates.fill(true);
+            for (let i = 0; i < numBulbs; i++) {
+                const bulb = document.querySelector(`.bulb[data-index="${i}"]`);
+                bulb.className = 'bulb on';
+                document.getElementById(`binary-${i}`).textContent = '1';
+            }
+            updateDisplay();
+        }
+
+        // 全てOFF
+        function allOff() {
+            resetBulbs();
+        }
+
+        // チャレンジ問題を生成
+        function generateChallenge() {
+            targetDecimal = Math.floor(Math.random() * 256);
+            document.getElementById('challenge-question').textContent = 
+                `10進数の ${targetDecimal} を電球で表現してください`;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'feedback';
+        }
+
+        // 答え合わせ
+        function checkAnswer() {
+            const binaryString = bulbStates.map(state => state ? '1' : '0').join('');
+            const currentDecimal = parseInt(binaryString, 2);
+            const feedback = document.getElementById('feedback');
+            
+            if (currentDecimal === targetDecimal) {
+                feedback.textContent = '正解です！素晴らしい！';
+                feedback.className = 'feedback correct';
+            } else {
+                const correctBinary = targetDecimal.toString(2).padStart(numBulbs, '0');
+                feedback.textContent = `不正解です。正解は ${correctBinary} です。`;
+                feedback.className = 'feedback incorrect';
+            }
+        }
+
+        // ページロード時に初期化
+        window.onload = () => {
+            initializeBulbs();
+            generateChallenge();
+        };
+    </script>
+</body>
+</html>
